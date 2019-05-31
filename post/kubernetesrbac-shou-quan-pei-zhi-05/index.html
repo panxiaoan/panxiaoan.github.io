@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Kubernetes：RBAC 授权配置 05 | 行走在年轮之上</title>
+<meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://panxiaoan.github.io/favicon.ico?v=1559270979810">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://panxiaoan.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://panxiaoan.github.io">
+        <img src="https://panxiaoan.github.io/images/avatar.png?v=1559270979810" class="site-logo">
+        <h1 class="site-title">行走在年轮之上</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="https://github.com/panxiaoan" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+      
+        
+      
+        
+          <a class="social-link" href="https://www.zhihu.com/people/panningbo/activities" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/panxiaoan" target="_blank">潘小安</a> | <a class="rss" href="https://panxiaoan.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Kubernetes：RBAC 授权配置 05</h2>
+            <div class="post-date">2019-05-31</div>
+            
+            <div class="post-content">
+              <p>在 Kubernetes 1.6 版本后, 新增角色访问控制机制（Role-Based Access，RBAC）让集群管理员可以针对特定使用者或服务账号的角色，进行更精确的资源访问控制。在 RBAC 中，权限与角色相关联，用户通过成为适当角色的成员而得到这些角色的权限。这就极大地简化了权限的管理。</p>
+<h1 id="rbac-api-对象">RBAC API 对象</h1>
+<p>Kubernetes 有一个很基本的特性就是它的<a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/">所有资源对象都是模型化的 API 对象</a>，允许执行 CRUD(Create、Read、Update、Delete)操作(也就是我们常说的增、删、改、查操作)，比如下面的这下资源：</p>
+<ul>
+<li>Pods</li>
+<li>ConfigMaps</li>
+<li>Deployments</li>
+<li>Nodes</li>
+<li>Secrets</li>
+<li>Namespaces</li>
+</ul>
+<p>上面这些资源对象的可能存在的操作有：</p>
+<ul>
+<li>create</li>
+<li>get</li>
+<li>delete</li>
+<li>list</li>
+<li>update</li>
+<li>edit</li>
+<li>watch</li>
+<li>exec</li>
+</ul>
+<p>在更上层，这些资源和 API Group 进行关联，比如<code>Pods</code>属于 Core API Group，而<code>Deployements</code>属于 apps API Group，要在 <code>Kubernetes</code> 中进行 <code>RBAC</code> 的管理，除了上面的这些资源和操作以外，我们还需要另外的一些对象：</p>
+<ul>
+<li>Rule：规则，规则是一组属于不同 API Group 资源上的一组操作的集合</li>
+<li>Role 和 ClusterRole：角色和集群角色，这两个对象都包含上面的 Rules 元素，二者的区别在于，在 Role 中，定义的规则只适用于单个命名空间，也就是和 namespace 关联的，而 ClusterRole 是集群范围内的，因此定义的规则不受命名空间的约束。另外 Role 和 ClusterRole 在 <code>Kubernetes</code> 中都被定义为集群内部的 API 资源，和我们前面学习过的 Pod、ConfigMap 这些类似，都是我们集群的资源对象，所以同样的可以使用我们前面的<code>kubectl</code>相关的命令来进行操作</li>
+<li>Subject：主题，对应在集群中尝试操作的对象，集群中定义了3种类型的主题资源：
+<ul>
+<li>User Account：用户，这是有外部独立服务进行管理的，管理员进行私钥的分配，用户可以使用 KeyStone或者 Goolge 帐号，甚至一个用户名和密码的文件列表也可以。对于用户的管理集群内部没有一个关联的资源对象，所以用户不能通过集群内部的 API 来进行管理</li>
+<li>Group：组，这是用来关联多个账户的，集群中有一些默认创建的组，比如cluster-admin</li>
+<li>Service Account：服务帐号，通过<code>Kubernetes</code> API 来管理的一些用户帐号，和 namespace 进行关联的，适用于集群内部运行的应用程序，需要通过 API 来完成权限认证，所以在集群内部进行权限操作，我们都需要使用到 ServiceAccount，这也是我们这节课的重点</li>
+</ul>
+</li>
+<li>RoleBinding 和 ClusterRoleBinding：角色绑定和集群角色绑定，简单来说就是把声明的 Subject 和我们的 Role 进行绑定的过程(给某个用户绑定上操作的权限)，二者的区别也是作用范围的区别：RoleBinding 只会影响到当前 namespace 下面的资源操作权限，而 ClusterRoleBinding 会影响到所有的 namespace。</li>
+</ul>
+<pre><code class="language-flow">st=&gt;start: 开始 
+e=&gt;end: 登录 
+io1=&gt;inputoutput: 输入用户名密码 
+sub1=&gt;subroutine: 数据库查询子类 
+cond=&gt;condition: 是否有此用户 
+cond2=&gt;condition: 密码是否正确 
+op=&gt;operation: 读入用户信息
+st-&gt;io1-&gt;sub1-&gt;cond 
+cond(yes,right)-&gt;cond2 
+cond(no)-&gt;io1(right) 
+cond2(yes,right)-&gt;op-&gt;e 
+cond2(no)-&gt;io1 
+</code></pre>
+<h1 id="创建一个只能访问特定命名空间用户和权限">创建一个只能访问特定命名空间用户和权限</h1>
+<pre><code class="language-shell"># 创建 test 命名空间
+kubectl create namespace test
+
+# 在 test 创建一个用户
+kubectl create sa testadmin -n test
+</code></pre>
+<h2 id="创建一个角色">创建一个角色</h2>
+<pre><code class="language-shell">vim role-test-admin.yaml
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+    name: role-test-admin
+rules:
+- apiGroups: [&quot;&quot;]
+    resources: [&quot;*&quot;]
+    verbs: [&quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;create&quot;, &quot;update&quot;, &quot;patch&quot;, &quot;delete&quot;]
+- apiGroups: [&quot;extensions&quot;, &quot;apps&quot;]
+    resources: [&quot;*&quot;]
+    verbs: [&quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;create&quot;, &quot;update&quot;, &quot;patch&quot;, &quot;delete&quot;]
+
+kubectl apply -f role-test-admin.yaml
+</code></pre>
+<h2 id="将用户绑定到角色">将用户绑定到角色</h2>
+<pre><code class="language-shell">vim role-test-admin-binding.yaml
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+    name: role-test-admin-binding
+subjects:
+- kind: ServiceAccount
+    name: testadmin
+    namespace: test
+roleRef:
+    kind: Role
+    name: role-test-admin
+    apiGroup: rbac.authorization.k8s.io
+
+kubectl apply -f role-test-admin-binding.yaml
+</code></pre>
+<h2 id="获取用户登录-token">获取用户登录 Token</h2>
+<pre><code class="language-shell"># 查看用户 Token
+kubectl get secret -n test | grep testadmin
+
+# 获取登录 Dashboard UI 的 Token 值
+kubectl describe secret -n test [tokenname]
+</code></pre>
+<h1 id="创建一个整个集群只读用户和权限">创建一个整个集群只读用户和权限</h1>
+<pre><code class="language-shell"># 创建集群用户
+kubectl create sa panxiaoan -n kube-system
+</code></pre>
+<h2 id="创建一个集群只读角色">创建一个集群只读角色</h2>
+<pre><code class="language-shell">vim cluster-role-readonly.yaml
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+    name: cluster-role-readonly
+rules:
+- apiGroups: [&quot;&quot;]
+    resources: [&quot;*&quot;]
+    verbs: [&quot;get&quot;, &quot;watch&quot;, &quot;list&quot;]
+- apiGroups: [&quot;extensions&quot;, &quot;apps&quot;]
+    resources: [&quot;*&quot;]
+    verbs: [&quot;get&quot;, &quot;list&quot;, &quot;watch&quot;]
+
+kubectl apply -f cluster-role-readonly.yaml
+</code></pre>
+<h2 id="绑定角色到用户">绑定角色到用户</h2>
+<pre><code class="language-shell">vim cluster-role-readonly-binding.yaml
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+    name: cluster-role-readonly-binding
+subjects:
+- kind: ServiceAccount
+    name: panxiaoan
+    namespace: kube-system
+roleRef:
+    kind: ClusterRole
+    name: cluster-role-readonly
+    apiGroup: rbac.authorization.k8s.io
+
+kubectl apply -f cluster-role-readonly-binding.yaml
+</code></pre>
+<h2 id="获取用户登录-token-2">获取用户登录 Token</h2>
+<pre><code class="language-shell"># 查看用户 Token
+kubectl get secret -n kube-system | grep panxiaoan
+
+# 获取登录 Dashboard UI 的 Token 值
+kubectl describe secret -n kube-system [tokenname]
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/kubernetes" class="tag">
+                    kubernetes
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/k8s" class="tag">
+                    k8s
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/kubernetespei-zhi-dashboard-gui-04">
+                  <h3 class="post-title">
+                    Kubernetes：配置 Dashboard GUI 04
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '778be70d2cb3e47d4e2c',
+        clientSecret: '4e9b0fe8ee9cff6b19f7d918b334c557b7db01bf',
+        repo: 'blog-comments',
+        owner: 'panxiaoan',
+        admin: ['panxiaoan'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

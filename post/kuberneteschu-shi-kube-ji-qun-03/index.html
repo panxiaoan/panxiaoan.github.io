@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | 行走在年轮之上</title>
+<title>Kubernetes：初始 Kube 集群 03 | 行走在年轮之上</title>
 <meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -106,18 +106,66 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">关于</h2>
-            <div class="post-date">2019-01-25</div>
+            <h2 class="post-title">Kubernetes：初始 Kube 集群 03</h2>
+            <div class="post-date">2019-05-31</div>
             
             <div class="post-content">
-              <p>程序猿，不宅，有点趣，喜欢篮球和电影</p>
-<p>在供应链领域摸爬滚打 10 多年，对 <code>运输 TMS</code>、<code>仓储 WMS</code>、<code>订单 OMS</code>、<code>路径优化 ROS</code>、<code>计费 BMS</code> 略知一二</p>
-<ul>
-<li><a href="https://github.com/panxiaoan">Github</a></li>
-</ul>
+              <p>在环境准备的时候, 我们在准备的两台服务器中都安装了: docker, kubeadm, kubectl, kubelet, kubernetes-cni, 以及安装这些组件所需的 Docker 镜像. 而本文是专门使用 Kubeadm 来配置 master 节点.</p>
+<h1 id="初始化集群">初始化集群</h1>
+<pre><code class="language-shell">kubeadm init --kubernetes-version=v1.10.0 --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.246.166 --ignore-preflight-errors=Swap
+    
+# 指定 Kubernetes 版本
+--kubernetes-version=v1.10.0
+# flannel 使用
+--pod-network-cidr=10.244.0.0/16
+# k8s-master ip 地址
+--apiserver-advertise-address=192.168.246.166
+# 忽略 Swap 错误
+--ignore-preflight-errors=Swap
+</code></pre>
+<h2 id="记录-kubeadm-init-最后输出的日志">记录 kubeadm init 最后输出的日志</h2>
+<pre><code class="language-shell">
+# 运行下面三个命令
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# 记住下面这个命令, 用于将其他节点加入 Kube 集群, 主要是 其中的 token
+kubeadm join 192.168.246.166:6443 --token 7azmk8.20ip5o7skbi4cegy --discovery-token-ca-cert-hash sha256:a3f37441dff827a6134ab638ce45e2051db645d60224d325ddff5453a7f0b04e
+</code></pre>
+<h2 id="安装-pod-network-flannel">安装 Pod network: flannel</h2>
+<pre><code class="language-shell">kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+</code></pre>
+<h2 id="检查集群节点是否安装成功">检查集群节点是否安装成功</h2>
+<pre><code class="language-shell">kubectl get nodes -o wide
+</code></pre>
+<h1 id="将-k8s-node01-加入集群">将 k8s-node01 加入集群</h1>
+<pre><code class="language-shell">kubeadm join 192.168.246.166:6443 --token 7azmk8.20ip5o7skbi4cegy --discovery-token-ca-cert-hash sha256:a3f37441dff827a6134ab638ce45e2051db645d60224d325ddff5453a7f0b04e
+</code></pre>
 
             </div>
             
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/kubernetes" class="tag">
+                    kubernetes
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/k8s" class="tag">
+                    k8s
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/kubernetes-an-zhuang-kube-ji-qun-huan-jing-zhun-bei-02">
+                  <h3 class="post-title">
+                    Kubernetes：安装 Kube 集群 环境准备 02
+                  </h3>
+                </a>
+              </div>
             
 
             

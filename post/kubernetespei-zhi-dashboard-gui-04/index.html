@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | 行走在年轮之上</title>
+<title>Kubernetes：配置 Dashboard GUI 04 | 行走在年轮之上</title>
 <meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -106,18 +106,69 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">关于</h2>
-            <div class="post-date">2019-01-25</div>
+            <h2 class="post-title">Kubernetes：配置 Dashboard GUI 04</h2>
+            <div class="post-date">2019-05-31</div>
             
             <div class="post-content">
-              <p>程序猿，不宅，有点趣，喜欢篮球和电影</p>
-<p>在供应链领域摸爬滚打 10 多年，对 <code>运输 TMS</code>、<code>仓储 WMS</code>、<code>订单 OMS</code>、<code>路径优化 ROS</code>、<code>计费 BMS</code> 略知一二</p>
+              <p>Dashboard GUI 作为 Kubernetes 的 Web 用户界面，用户可以通过 Dashboard 在 Kubernetes 集群中: 管理集群, 部署服务等等。通过 Dashboard，用户可以查看集群中应用的运行情况，同时也能够基于 Dashboard 创建或修改部署、任务、服务等 Kubernetes 的资源。通过部署向导，用户能够对部署进行扩缩容，进行滚动更新、重启 Pod 和部署新应用。当然，通过 Dashboard 也能够查看 Kubernetes 资源的状态。</p>
+<blockquote>
+<p>以下操作均在 k8s-master</p>
+</blockquote>
+<h1 id="安装">安装</h1>
+<pre><code class="language-shell">kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.8.3/src/deploy/recommended/kubernetes-dashboard.yaml
+</code></pre>
+<h1 id="修改配置">修改配置</h1>
+<pre><code class="language-shell"># type: ClusterIP，修改为：type: NodePort, 才能在集群外部访问
+kubectl -n kube-system edit service kubernetes-dashboard
+</code></pre>
+<h1 id="查看-dashboard-服务状态">查看 Dashboard 服务状态</h1>
+<pre><code class="language-shell">kubectl -n kube-system get service kubernetes-dashboard
+</code></pre>
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/8786616c-4bcd-4b18-82a9-48a3a957d370/Untitled.png?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536375563&Signature=luyDD9fAfOqeaZ%2BTc6bQp8zvDSk%3D" />
+<h2 id="通过-rbac-授权-admin-集群管理员权限">通过 RBAC 授权 Admin 集群管理员权限</h2>
+<pre><code class="language-shell"># 创建 Admin 服务账号
+kubectl create serviceaccount cluster-admin-dashboard-sa
+
+# 绑定服务账号
+kubectl create clusterrolebinding cluster-admin-dashboard-sa \
+    --clusterrole=cluster-admin \
+    --serviceaccount=default:cluster-admin-dashboard-sa
+
+# 获取 Admin Token 名称
+kubectl get secret | grep cluster-admin-dashboard-sa
+
+# 获取 Admin Token, 通过 Token 登录 Dashboard
+kubectl describe secret cluster-admin-dashboard-sa-token-pfprg
+</code></pre>
 <ul>
-<li><a href="https://github.com/panxiaoan">Github</a></li>
+<li>访问 Dashboard: https://192.168.246.166:30082, 用 Token 登录
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/f15ebeab-c87b-46ce-b63c-94f8662b01a7/Untitled.png?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536375602&Signature=Rv6WgyJq29MLxgLaA770uYyVG8E%3D" />
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/f15ebeab-c87b-46ce-b63c-94f8662b01a7/Untitled.png?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536375602&Signature=Rv6WgyJq29MLxgLaA770uYyVG8E%3D" /></li>
 </ul>
 
             </div>
             
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/kubernetes" class="tag">
+                    kubernetes
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/k8s" class="tag">
+                    k8s
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/kuberneteschu-shi-kube-ji-qun-03">
+                  <h3 class="post-title">
+                    Kubernetes：初始 Kube 集群 03
+                  </h3>
+                </a>
+              </div>
             
 
             

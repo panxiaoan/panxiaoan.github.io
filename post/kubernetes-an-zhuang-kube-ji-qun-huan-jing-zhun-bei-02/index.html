@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Kubernetes：安装 Kube 集群 环境准备 02 | 行走在年轮之上</title>
+<meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://panxiaoan.github.io/favicon.ico?v=1559270979810">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://panxiaoan.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://panxiaoan.github.io">
+        <img src="https://panxiaoan.github.io/images/avatar.png?v=1559270979810" class="site-logo">
+        <h1 class="site-title">行走在年轮之上</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="https://github.com/panxiaoan" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+      
+        
+      
+        
+          <a class="social-link" href="https://www.zhihu.com/people/panningbo/activities" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/panxiaoan" target="_blank">潘小安</a> | <a class="rss" href="https://panxiaoan.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Kubernetes：安装 Kube 集群 环境准备 02</h2>
+            <div class="post-date">2019-05-31</div>
+            
+            <div class="post-content">
+              <p>我是通过 Kubeadm 安装 Kubernetes 集群. 那什么是 Kubeadm 呢? kubeadm 是 Kubernetes 官方提供的快速安装和初始化 Kubernetes 集群的工具.</p>
+<h1 id="环境配置所有节点">环境配置(所有节点)</h1>
+<h2 id="我的环境">我的环境</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">hostname</th>
+<th style="text-align:left">用途</th>
+<th style="text-align:left">IP</th>
+<th style="text-align:left">配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">k8s-master</td>
+<td style="text-align:left">master</td>
+<td style="text-align:left">192.168.246.166</td>
+<td style="text-align:left">2C 4G 25GB</td>
+</tr>
+<tr>
+<td style="text-align:left">k8s-node01</td>
+<td style="text-align:left">node</td>
+<td style="text-align:left">192.168.246.167</td>
+<td style="text-align:left">2C 4G 25GB</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-shell"># 宿主机
+macOS 10.13.6
+VMware Fusion 10.1.2
+
+# 虚拟机操作系统
+# uname -sr
+Linux version 3.10.0-862.2.3.el7.x86_64
+# cat /etc/redhat-release
+CentOS Linux release 7.5.1804 (Core)
+
+# 最低配置 
+2C 2G 25GB
+</code></pre>
+<h1 id="修改系统配置">修改系统配置</h1>
+<h2 id="修改-hostname">修改 hostname</h2>
+<pre><code class="language-shell">vim /etc/hosts
+192.168.246.166 k8s-master
+192.168.246.167 k8s-node01
+
+# 如果是阿里云 ECS host 需要按下面方式修改(单独在每台节点设置)
+hostnamectl --static set-hostname k8s-master
+# 重启 系统
+reboot
+# 查看 hostname 修改结果
+hostnamectl status
+</code></pre>
+<h2 id="关闭防火墙">关闭防火墙</h2>
+<pre><code class="language-shell">systemctl stop firewalld
+systemctl disable firewalld
+</code></pre>
+<h2 id="禁用-selinux">禁用 selinux</h2>
+<pre><code class="language-shell">setenforce 0
+sed -i &quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot; /etc/sysconfig/selinux
+</code></pre>
+<h2 id="关闭-swap">关闭 swap</h2>
+<pre><code class="language-shell">swapoff -a 
+sed -i 's/.*swap.*/#&amp;/' /etc/fstab
+</code></pre>
+<h2 id="配置-iptables-转发参数">配置 iptables 转发参数</h2>
+<pre><code class="language-shell">cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables=1
+net.bridge.bridge-nf-call-iptables=1
+net.ipv4.ip_forward=1
+EOF
+
+# 生效并查看 iptables 配置
+modprobe br_netfilter
+sysctl -p /etc/sysctl.d/k8s.conf
+</code></pre>
+<h1 id="安装-阿里云-yum-源">安装 阿里云 YUM 源</h1>
+<h2 id="创建源文件">创建源文件</h2>
+<pre><code class="language-shell">cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+        http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+</code></pre>
+<h2 id="更新">更新</h2>
+<pre><code class="language-shell">yum clean all
+yum makecache
+yum update -y
+</code></pre>
+<h1 id="安装-docker">安装 Docker</h1>
+<h2 id="下载并安装">下载并安装</h2>
+<pre><code class="language-shell"># 下载并安装正式版
+curl -fsSL https://get.docker.com | sh
+
+# 非 root 用户，则将用户加入 docker 组
+sudo usermod -aG docker [username]
+
+# 生效、启动
+systemctl enable docker
+systemctl start docker
+chkconfig docker on
+
+# 检查是否成功启动
+docker version
+</code></pre>
+<h1 id="安装-kubeadm">安装 Kubeadm</h1>
+<h2 id="下载必要镜像">下载必要镜像</h2>
+<blockquote>
+<p>因为 Kube 的镜像网站被墙, 所以只能曲线救国. 在 Github 中创建一个项目, 参考 &quot;<a href="https://github.com/panxiaoan/kubernetes-images-mirror">https://github.com/panxiaoan/kubernetes-images-mirror</a>&quot;, 然后在 Docker Hub 中选择 &quot;Create Autoomated Build&quot;</p>
+</blockquote>
+<pre><code class="language-shell"># 下载我已准备好的 Shell 文件
+https://github.com/panxiaoan/kubernetes-images-mirror/blob/v1.10.0/pull-k8s-images.sh
+
+# 授权
+chmod a+x pull-k8s-images.sh
+
+# 运行, 此时开始从 Docker Hub 中下载
+./pull-k8s-images.sh
+</code></pre>
+<h2 id="安装-kubectl-kubeadm-kubelet">安装 Kubectl Kubeadm Kubelet</h2>
+<pre><code class="language-shell">yum install -y kubeadm-1.10.0-0 kubectl-1.10.0-0 kubelet-1.10.0-0 kubernetes-cni
+</code></pre>
+<h2 id="配置-kubeadm-环境变量">配置 Kubeadm 环境变量</h2>
+<pre><code class="language-shell">vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# 将 systemd 修改为 cgroupfs
+# 通过 docker info 查看: Cgroup Driver: cgroupfs
+Environment=&quot;KUBELET_CGROUP_ARGS=--cgroup-driver=cgroupfs&quot;
+Environment=&quot;KUBELET_EXTRA_ARGS=--fail-swap-on=false&quot;
+</code></pre>
+<h2 id="启动-kubelet-服务">启动 Kubelet 服务</h2>
+<pre><code class="language-shell">systemctl daemon-reload
+systemctl enable kubelet.service
+systemctl start kubelet.service
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/kubernetes" class="tag">
+                    kubernetes
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/k8s" class="tag">
+                    k8s
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/kubernetes-jian-jie">
+                  <h3 class="post-title">
+                    Kubernetes：简介 01
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '778be70d2cb3e47d4e2c',
+        clientSecret: '4e9b0fe8ee9cff6b19f7d918b334c557b7db01bf',
+        repo: 'blog-comments',
+        owner: 'panxiaoan',
+        admin: ['panxiaoan'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | 行走在年轮之上</title>
+<title>Docker：安装 02 | 行走在年轮之上</title>
 <meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -106,18 +106,81 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">关于</h2>
-            <div class="post-date">2019-01-25</div>
+            <h2 class="post-title">Docker：安装 02</h2>
+            <div class="post-date">2019-05-31</div>
             
             <div class="post-content">
-              <p>程序猿，不宅，有点趣，喜欢篮球和电影</p>
-<p>在供应链领域摸爬滚打 10 多年，对 <code>运输 TMS</code>、<code>仓储 WMS</code>、<code>订单 OMS</code>、<code>路径优化 ROS</code>、<code>计费 BMS</code> 略知一二</p>
+              <h2 id="演示环境">演示环境</h2>
 <ul>
-<li><a href="https://github.com/panxiaoan">Github</a></li>
+<li>本机操作系统：macOS 10.13.4</li>
+<li>虚拟机：VMware Fusion 10.1.0</li>
+<li>虚拟机中安装的操作系统：CentOS 7：CentOS-7-x86_64-DVD-1708.iso</li>
 </ul>
+<h2 id="centos-7-中安装-docker">CentOS 7 中安装 Docker</h2>
+<pre><code class="language-shell"># 编辑 IPV4，sysctl.conf
+vi /etc/sysctl.conf
+net.ipv4.ip_forward=1
+systemctl restart network
 
+# 卸载老版本
+yum remove -y docker*
+
+# 删除镜像
+rm -rf /var/lib/docker
+
+# 更新 CentOS
+yum update
+
+# 下载并安装正式版
+curl -fsSL https://get.docker.com | sh
+
+# 或者通过 yum 安装
+yum list docker-ce --showduplicates|sort -r
+yum install -y https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm
+yum install -y docker-ce-17.03.2.ce
+
+# 非 root 用户，则将用户加入 docker 组
+sudo usermod -aG docker [username]
+
+# 生效、启动
+systemctl enable docker
+systemctl start docker
+chkconfig docker on
+
+# 检查是否成功启动
+docker version
+</code></pre>
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/25db621d-8407-47a2-a11f-b1a76f3ed0d1/Untitled?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536379530&Signature=tF2%2Bc3%2BC%2B7qPC1PyCfr8HCfqn3Y%3D" />
+<h1 id="从-docker-hub-中-拉取镜像-hello-world">从 Docker Hub 中 拉取镜像 hello-world</h1>
+<pre><code class="language-shell"># 从镜像仓库中拉取 hello-world 镜像
+docker pull hello-world
+
+# 检查镜像是否拉取成功
+docker images
+
+# 运行 hello-world 容器
+docker run hello-world
+</code></pre>
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/36c0da88-c7dd-4633-905d-e69fa560f59a/Untitled?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536379530&Signature=Ox5h8zbtD3vNSTIQz4o1kn9P%2BCc%3D" />
             </div>
             
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/docker" class="tag">
+                    docker
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/docker-jian-jie">
+                  <h3 class="post-title">
+                    Docker：简介 01
+                  </h3>
+                </a>
+              </div>
             
 
             

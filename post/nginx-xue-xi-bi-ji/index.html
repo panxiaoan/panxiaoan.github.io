@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Nginx 学习笔记 | 行走在年轮之上</title>
+<meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://panxiaoan.github.io/favicon.ico?v=1559270979810">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://panxiaoan.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://panxiaoan.github.io">
+        <img src="https://panxiaoan.github.io/images/avatar.png?v=1559270979810" class="site-logo">
+        <h1 class="site-title">行走在年轮之上</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="https://github.com/panxiaoan" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+      
+        
+      
+        
+          <a class="social-link" href="https://www.zhihu.com/people/panningbo/activities" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/panxiaoan" target="_blank">潘小安</a> | <a class="rss" href="https://panxiaoan.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Nginx 学习笔记</h2>
+            <div class="post-date">2018-12-12</div>
+            
+              <div class="feature-container" style="background-image: url('http://nginx.org/nginx.png')">
+              </div>
+            
+            <div class="post-content">
+              <h1 id="简介">简介</h1>
+<p>官网: <a href="http://nginx.org/">http://nginx.org</a>
+Nginx 是一个高性能 HTTP 和反向代理服务器, 也是一个 IMAP/POP3/SMTP 代理服务器. Nginx 由 IgorSysoev 为俄罗斯访问量排第二的 <a href="http://rambler.ru">rambler.ru</a> 网站开发, 第一个开源版本 0.1.0 发布于 2004年10月4号. 源码以 BSD 许可发布.</p>
+<h1 id="nginx-相对于-apache-的优点">Nginx 相对于 Apache 的优点</h1>
+<ul>
+<li>配置简单, 容易上手</li>
+<li>内存 和 CPU 占用极低, 约为 Apache  的 1/5 ~ 1/10</li>
+<li>高并发响应性能非常好, 官方测试: 支持处理每秒5万静态文件</li>
+<li>反向代理性能非常强, 支持多种方式的负载均衡</li>
+<li>支持对后端服务做健康检查</li>
+<li>支持 PHP cgi 和 fastcgi</li>
+</ul>
+<h1 id="安装编译环境">安装编译环境</h1>
+<h2 id="安装编译工具及库文件">安装编译工具及库文件</h2>
+<pre><code class="language-shell">yum -y install make zlib zlib-devel gcc-c++ libtool  openssl openssl-devel
+</code></pre>
+<h2 id="安装-pcre-库">安装 PCRE 库</h2>
+<pre><code class="language-shell">cd /usr/local
+
+wget http://downloads.sourceforge.net/project/pcre/pcre/8.35/pcre-8.35.tar.gz
+
+tar -zxvf pcre-8.35.tar.gz
+
+cd pcre-8.35
+
+./configure
+make
+make install
+</code></pre>
+<h1 id="下载并安装-nginx">下载并安装 Nginx</h1>
+<pre><code class="language-shell"># 下载
+cd /usr/local
+wget http://nginx.org/download/nginx-1.14.0.tar.gz
+
+# 解压
+tar -zxvf nginx-1.14.0.tar.gz
+
+# 编译并安装
+cd /usr/local/nginx-1.14.0
+
+./configure --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --with-pcre=/usr/local/pcre-8.35
+
+make
+make install
+
+# 安装完成, 检查 Nginx 版本
+/usr/local/nginx/sbin/nginx -v
+</code></pre>
+<h1 id="配置反向代理">配置反向代理</h1>
+<pre><code class="language-shell">vim /usr/local/nginx/conf/nginx.conf
+
+server {
+        listen       192.168.1.252:80;
+                        # 8000 端口主要用于路由器中的虚拟服务器, 外网转发
+        listen       192.168.1.252:8000;
+        server_name  192.168.1.252;
+
+        location /wms5 {
+                proxy_pass http://192.168.1.252:7070/wms5;
+                proxy_read_timeout 900;
+                # 客户端最大数据量: 如果大文件上传得修改
+                client_max_body_size 1024m;
+        }
+
+        location /oms5 {
+                proxy_pass http://192.168.1.252:7070/oms5;
+                proxy_read_timeout 900;
+                client_max_body_size 1024m;
+        }
+}
+</code></pre>
+<h1 id="检查-conf-配置是否正确">检查 conf 配置是否正确</h1>
+<pre><code class="language-shell">/usr/local/nginx/sbin/nginx -t
+</code></pre>
+<h1 id="启动">启动</h1>
+<pre><code class="language-shell"># 启动
+/usr/local/nginx/sbin/nginx
+
+# 停止
+/usr/local/nginx/sbin/nginx -s quit
+# 或者
+pkill nginx
+
+# 重新加载配置
+/usr/local/nginx/sbin/nginx -s reload
+</code></pre>
+<h1 id="nginx-负载均衡">Nginx 负载均衡</h1>
+<h2 id="upstream-负载均衡-5-中算法">Upstream 负载均衡 5 中算法</h2>
+<ul>
+<li><strong>轮询(默认):</strong> 每个请求按时间先后逐一分配到不同的服务器, 如果后端某台服务器挂掉, 自动剔除, 待恢复自动添加上.</li>
+<li><strong>权重 Weight:</strong> 指定轮询权重, 权重越高, 处理请求越多, weight 和 访问比率成正比, 用于后端服务器硬件配置不均的情况.</li>
+<li><strong>ip_hash:</strong> 每个请求根据访问的 IP 的 hash 值结果分配, 这样每个方可固定访问到后端服务器, 可以解决 Session 共享问题.</li>
+<li><strong>fair:</strong> 三方提供, 按后端服务器的响应时间来分配请求, 响应时间短的优先分配</li>
+<li><strong>url_hash:</strong> 三方提供, 根据 URL 的 hash 值结果分配</li>
+</ul>
+<pre><code class="language-shell"># 基于权重负载均衡
+upstream cluster01 {
+        # max_fails, fail_timeout 用来判断后端服务是否健康, 如果在 30s 内失败2次, 则失效
+        server localhost:8081 weight=1 max_fails=2 fail_timeout=30s;
+        server localhost:8082 weight=1 max_fails=2 fail_timeout=30s;
+}
+
+# 基于 ip_hash 负载均衡
+upstream cluster02 {
+        ip_hash;
+        server localhost:8083 fail_timeout=30s;
+        server localhost:8084 fail_timeout=30s;
+}
+</code></pre>
+<h1 id="配置文件详解">配置文件详解</h1>
+<pre><code class="language-shell"># 启动进程数, 生产设置成 CPU 核心数量
+worker_processes  1;
+
+# 错误日志
+error_log  logs/error.log error;
+
+events {
+        # 单个进程最大并发连接数量
+        worker_connections  1024;
+}
+
+http {
+        # Mime 类型, 由 mime.type 文件定义
+        include       mime.types;
+        default_type  application/octet-stream;
+
+        # 访问日志
+        access_log  logs/access.log info;
+
+        # 是否通过 zero copy 方式输出文件, 普通应用为 on, 对于下载类 中 I/O 应用, 可设置 off 用来平衡磁盘和网络 I/O 处理速度, 降低系统 uptime    
+        sendfile        on;
+
+        # 开启目录列表访问, 适合下载服务器, 默认关闭
+        autoindex off;
+
+        # 防止网络阻塞
+        tcp_nopush     on;
+
+        # 保持客户端连接的超时时间(秒)
+        keepalive_timeout  65;
+
+        # 压缩静态资源
+        gzip  on;
+        gzip_min_length 1k;
+        gzip_buffers 4 16k;
+        # 压缩级别, 值越小, 压缩比列也小, 但 CPU 处理更快
+        gzip_comp_level 2;
+        gzip_types text/html,text/xml,text/plain,text/css,text/javascript,application/json,application/xml,application/javascript,image/png
+
+        # 基于权重负载均衡
+        upstream cluster01 {
+                # max_fails, fail_timeout 用来判断后端服务是否健康, 如果在 30s 内失败2次, 则失效
+                server localhost:8081 weight=1 max_fails=2 fail_timeout=30s;
+                server localhost:8082 weight=1 max_fails=2 fail_timeout=30s;
+        }
+
+        # 基于 ip_hash 负载均衡
+        upstream cluster02 {
+                ip_hash;
+                server localhost:8083 fail_timeout=30s;
+                server localhost:8084 fail_timeout=30s;
+        }
+
+        # 虚拟主机
+        server {
+                listen       80;
+                server_name  192.168.1.252;
+
+                ## gogs
+                location /gogs/ {
+                        proxy_pass http://192.168.1.252:3000/;
+                        proxy_redirect default;
+                        proxy_connect_timeout 900; # 连接超时时间 
+                        proxy_read_timeout 900; # 连接成功后, 服务响应时间
+                        proxy_send_timeout 900; # 服务回传响应时间
+                        client_max_body_size 1024m; # 允许请求最大值
+                }
+
+                # 开启 Nginx 监控
+                location /status {
+                        stub_status on;
+                }
+        }
+
+        # HTTPS server
+        #
+        #server {
+        #    listen       443 ssl;
+        #    server_name  localhost;
+
+        #    ssl_certificate      cert.pem;
+        #    ssl_certificate_key  cert.key;
+
+        #    ssl_session_cache    shared:SSL:1m;
+        #    ssl_session_timeout  5m;
+
+        #    ssl_ciphers  HIGH:!aNULL:!MD5;
+        #    ssl_prefer_server_ciphers  on;
+
+        #    location / {
+        #        root   html;
+        #        index  index.html index.htm;
+        #    }
+        #}
+
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/nginx" class="tag">
+                    nginx
+                  </a>
+                
+              </div>
+            
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '778be70d2cb3e47d4e2c',
+        clientSecret: '4e9b0fe8ee9cff6b19f7d918b334c557b7db01bf',
+        repo: 'blog-comments',
+        owner: 'panxiaoan',
+        admin: ['panxiaoan'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

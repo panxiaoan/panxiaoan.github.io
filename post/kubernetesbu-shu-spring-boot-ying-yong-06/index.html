@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | 行走在年轮之上</title>
+<title>Kubernetes：部署 Spring Boot 应用 06 | 行走在年轮之上</title>
 <meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -106,18 +106,112 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">关于</h2>
-            <div class="post-date">2019-01-25</div>
+            <h2 class="post-title">Kubernetes：部署 Spring Boot 应用 06</h2>
+            <div class="post-date">2019-05-31</div>
             
             <div class="post-content">
-              <p>程序猿，不宅，有点趣，喜欢篮球和电影</p>
-<p>在供应链领域摸爬滚打 10 多年，对 <code>运输 TMS</code>、<code>仓储 WMS</code>、<code>订单 OMS</code>、<code>路径优化 ROS</code>、<code>计费 BMS</code> 略知一二</p>
-<ul>
-<li><a href="https://github.com/panxiaoan">Github</a></li>
-</ul>
+              <p>前面几章我们大致了解了什么是 Kubernetes, 它能做什么, 以及如何安装, 授权. 今天我们在已经准备好的 Kubernetes 集群中, 安装一个 SpringBoot 应用.</p>
+<h1 id="下载镜像">下载镜像</h1>
+<pre><code class="language-shell"># 在 k8s-node01 中 下载已经准备好的镜像
+docker pull panxiaoan/spring-boot-gwt-sample:39
+
+# 镜像对应用的源码: https://github.com/panxiaoan/spring-boot-gwt-sample
+</code></pre>
+<h1 id="在-k8s-master-编写部署配置文件-deploymentyaml">在 k8s-master 编写部署配置文件: deployment.yaml</h1>
+<pre><code class="language-yaml">---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+    labels:
+    app: springbootgwtsample
+    version: v1.1.1
+    name: springbootgwtsample
+    namespace: default
+spec:
+    replicas: 1
+    selector:
+    matchLabels:
+        app: springbootgwtsample
+    template:
+    metadata:
+        labels:
+        app: springbootgwtsample
+    spec:
+        containers:
+        - name: springbootgwtsample
+        image: panxiaoan/spring-boot-gwt-sample:39
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+            protocol: TCP
+        livenessProbe:
+            httpGet:
+            path: /
+            port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: springbootgwtsample
+    labels:
+    app: springbootgwtsample
+spec:
+    type: NodePort
+    selector:
+    app: springbootgwtsample
+    ports:
+    - port: 8080
+    protocol: TCP
+    targetPort: 8080
+    nodePort: 30233
+</code></pre>
+<h1 id="在-k8s-master-部署应用">在 k8s-master 部署应用</h1>
+<pre><code class="language-shell"># 部署
+kubectl apply -f deployment.yaml
+</code></pre>
+<h2 id="访问应用-http19216824616630233">访问应用: http://192.168.246.166:30233</h2>
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/9c2dabfd-79b8-4933-ad97-b584e7761032/Untitled.png?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536378813&Signature=NozI4dHux5%2BX1mgR8BUU4cGbtIQ%3D" />
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/02c47fa2-2f65-4354-8554-af7d8d83d75c/Untitled.png?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536378794&Signature=KWwuy3AsoT70hQeqYI8jNDwtICA%3D" />
+<h1 id="其他指令">其他指令</h1>
+<pre><code class="language-shell"># 手动升级
+kubectl set image deployment/springbootgwtsample springbootgwtsample=panxiaoan/spring-boot-gwt-sample:40 --namespace=default
+
+# 查看版本
+kubectl rollout history deployments --namespace=default
+
+# 查看历史版本
+kubectl describe deployment/springbootgwtsample --namespace=default
+</code></pre>
 
             </div>
             
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/springboot" class="tag">
+                    springboot
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/kubernetes" class="tag">
+                    kubernetes
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/k8s" class="tag">
+                    k8s
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/kubernetesrbac-shou-quan-pei-zhi-05">
+                  <h3 class="post-title">
+                    Kubernetes：RBAC 授权配置 05
+                  </h3>
+                </a>
+              </div>
             
 
             

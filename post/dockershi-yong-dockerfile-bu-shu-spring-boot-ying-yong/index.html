@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | 行走在年轮之上</title>
+<title>Docker：使用 Dockerfile 部署 Spring Boot 应用 03 | 行走在年轮之上</title>
 <meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -106,18 +106,109 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">关于</h2>
-            <div class="post-date">2019-01-25</div>
+            <h2 class="post-title">Docker：使用 Dockerfile 部署 Spring Boot 应用 03</h2>
+            <div class="post-date">2019-05-31</div>
             
             <div class="post-content">
-              <p>程序猿，不宅，有点趣，喜欢篮球和电影</p>
-<p>在供应链领域摸爬滚打 10 多年，对 <code>运输 TMS</code>、<code>仓储 WMS</code>、<code>订单 OMS</code>、<code>路径优化 ROS</code>、<code>计费 BMS</code> 略知一二</p>
+              <p>Dockerfile 一个声明式的配置文件, 是由一系列命令和参数构成的脚本，这些命令应用于基础镜像并最终创建一个新的镜像。它们简化了从头到尾的流程并极大的简化了部署工作。Dockerfile 从 FROM 命令开始，紧接着跟随者各种方法，命令和参数。其产出为一个新的可以用于创建容器的镜像。</p>
+<h1 id="下载我准备好的示例项目-基于-springboot">下载我准备好的示例项目, 基于 SpringBoot</h1>
+<pre><code class="language-shell"># 下载可直接运行的 jar
+https://pan.baidu.com/s/1mnrO5C1RGJh62vzxsun4Aw
+
+# 或者通过源码构建
+git clone https://github.com/panxiaoan/spring-boot-gwt-sample
+mvn clean eclipse:eclipse
+mvn clean package -Dmaven.test.skip=true
+
+# 因为 Docker Hub 访问太慢，故从时速云中拉取基础镜像
+docker pull index.tenxcloud.com/tenxcloud/java:8
+</code></pre>
+<h1 id="创建-dockerfile-文件">创建 DockerFile 文件</h1>
+<pre><code class="language-shell">mkdir /opt/spring-boot-gwt-sample
+
+cd /opt/spring-boot-gwt-sample
+
+vim Dockerfile
+
+# 基础镜像
+FROM index.tenxcloud.com/tenxcloud/java:8
+# 作者
+MAINTAINER panxiaoan(xiaoan.pan@qq.com)
+# 将 Spring Boot 应用复制到镜像中
+ADD spring-boot-gwt-sample-0.0.1.jar /opt
+# 切换目录，相当于 cd 命令
+WORKDIR /opt
+# 在容器中运行的命令
+CMD [&quot;java&quot;,&quot;-jar&quot;,&quot;spring-boot-gwt-sample-0.0.1.jar&quot;]
+</code></pre>
+<h1 id="创建一个启动-shell">创建一个启动 Shell</h1>
+<pre><code class="language-shell">cd /opt/spring-boot-gwt-sample
+vim start.sh
+
+#!/bin/bash
+
+CONTAINER_NAME=spring-boot-gwt-sample
+IMAGES_NAME=java/$CONTAINER_NAME
+
+FILENAME=$(find -name spring-boot-gwt-sample-**.jar)
+JARNAME=${FILENAME##*/}
+chmod  777 $JARNAME
+
+# 停止并删除原有容器 
+docker stop $CONTAINER_NAME
+docker rm $CONTAINER_NAME
+
+# 删除原有容器镜像
+IMAGE_ID=$(docker images | grep &quot;$IMAGES_NAME&quot; | awk '{print $3}')
+echo &quot;iam:&quot;$IMAGE_ID
+if [ -z &quot;$IMAGE_ID&quot; ]
+then
+    echo no images need del
+else
+    echo &quot;rm images:&quot; $IMAGE_ID
+    docker rmi -f $IMAGE_ID
+fi
+
+# 构建容器
+docker build --build-arg app=$JARNAME . -t $IMAGES_NAME
+ 
+# 运行容器
+docker run -d -p 8080:8080 --name $CONTAINER_NAME $IMAGES_NAME
+</code></pre>
+<h1 id="运行-startsh">运行 start.sh</h1>
+<pre><code class="language-shell">cd /opt/spring-boot-gwt-sample
+chmod a+x start.sh
+./start.sh
+</code></pre>
+<h1 id="访问应用">访问应用</h1>
 <ul>
-<li><a href="https://github.com/panxiaoan">Github</a></li>
+<li>http://localhost:8080
+<img src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/bec5ebd6-63d7-48b2-9112-75e6ee776eaa/Untitled?AWSAccessKeyId=AKIAJLJXUMP5IHUZAPFQ&Expires=1536383023&Signature=64NZPwaERHNa%2FqwePv3L500cVe8%3D" /></li>
 </ul>
 
             </div>
             
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/docker" class="tag">
+                    docker
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/springboot" class="tag">
+                    springboot
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/docker-an-zhuang">
+                  <h3 class="post-title">
+                    Docker：安装 02
+                  </h3>
+                </a>
+              </div>
             
 
             

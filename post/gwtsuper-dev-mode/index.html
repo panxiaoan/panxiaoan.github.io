@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>关于 | 行走在年轮之上</title>
+<title>GWT：Super Dev Mode | 行走在年轮之上</title>
 <meta name="description" content="她就像蒲公英一样的淘气,不,比蒲公英还要淘气。 有许多人多认为她很笨,可是她总觉得自己是最聪明的。 ">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -106,18 +106,84 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">关于</h2>
-            <div class="post-date">2019-01-25</div>
+            <h2 class="post-title">GWT：Super Dev Mode</h2>
+            <div class="post-date">2019-05-31</div>
+            
+              <div class="feature-container" style="background-image: url('https://panxiaoan.github.io/post-images/gwtsuper-dev-mode.jpg')">
+              </div>
             
             <div class="post-content">
-              <p>程序猿，不宅，有点趣，喜欢篮球和电影</p>
-<p>在供应链领域摸爬滚打 10 多年，对 <code>运输 TMS</code>、<code>仓储 WMS</code>、<code>订单 OMS</code>、<code>路径优化 ROS</code>、<code>计费 BMS</code> 略知一二</p>
+              <p>本文主要介绍 Spring Boot 整合 Google GWT 前端框架后，使用 GWT Super Dev Mode 模式通过 Chrome 浏览器调试前端代码。
+Google Web Toolkit，GWT：使用 Java 语言快速构建性能高的 JavaScript 前端应用程序的工具集。
+GWT 有以下优点：</p>
 <ul>
-<li><a href="https://github.com/panxiaoan">Github</a></li>
+<li>能够降低开发难度</li>
+<li>构建复杂的前端应用更简单和健壮</li>
+<li>使用 Java 编写前端交互界面，然后 GWT 会交叉编译到优化的 JavaScript</li>
 </ul>
+<h1 id="开发环境">开发环境</h1>
+<ul>
+<li>macOS 10.14</li>
+<li>JDK 1.8</li>
+<li>IntelliJ IDEA 2018.02</li>
+<li>插件：GWT Support</li>
+<li>浏览器 Chrome</li>
+<li>示例项目：git clone https://github.com/panxiaoan/spring-boot-gwt-sample.git</li>
+<li>GWT 2.8.1： <a href="http://www.gwtproject.org/versions.html">下载</a></li>
+</ul>
+<h1 id="super-dev-mode-配置">Super Dev Mode 配置</h1>
+<h2 id="配置-web-module">配置 Web Module</h2>
+<ul>
+<li>Web Resource Directory</li>
+</ul>
+<pre><code>/Users/panxiaoan/work/devops/workspace-idea/projects/github/spring-boot-gwt-sample/src/main/resources/static
+</code></pre>
+<p><img src="https://panxiaoan.github.io/post-images/1559269972884.png" alt=""></p>
+<h2 id="配置-gwt-module">配置 GWT Module</h2>
+<p><img src="https://panxiaoan.github.io/post-images/1559270001192.png" alt=""></p>
+<h2 id="配置-gwt-rundebug-configurations">配置 GWT Run/Debug Configurations</h2>
+<pre><code>Name：RunSpringBootGWTAppDebug
+VM options：-Xms1g -Xmx1g
+Dev Mode parameters：-war src/main/resources/static -nostartServer -port 8080 -workDir /Users/panxiaoan/work/devops/workspace-idea/projects/github/spring-boot-gwt/target
+Working directory: /Users/panxiaoan/work/devops/workspace-idea/projects/github/spring-boot-gwt
+</code></pre>
+<p><img src="https://panxiaoan.github.io/post-images/1559270013380.png" alt=""></p>
+<h1 id="使用方法">使用方法</h1>
+<blockquote>
+<p>注意：一定要以下步骤，按部就班运行</p>
+</blockquote>
+<ul>
+<li>第一步：运行 Spring Boot 应用：com.pxa.sample.RunSpringBootGWTSampleApp</li>
+<li>第二步：运行 RunSpringBootGWTAppDebug，此处会自动弹出 Chrome 浏览器</li>
+</ul>
+<h4 id="初始编译中">初始编译中</h4>
+<p><img src="https://panxiaoan.github.io/post-images/1559270021215.png" alt=""></p>
+<h4 id="chrome-javascript-console-debug">Chrome JavaScript Console Debug</h4>
+<p><img src="https://panxiaoan.github.io/post-images/1559270027908.png" alt=""></p>
 
             </div>
             
+              <div class="tag-container">
+                
+                  <a href="https://panxiaoan.github.io/tag/gwt" class="tag">
+                    gwt
+                  </a>
+                
+                  <a href="https://panxiaoan.github.io/tag/google" class="tag">
+                    google
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://panxiaoan.github.io/post/kubernetesbu-shu-spring-boot-ying-yong-06">
+                  <h3 class="post-title">
+                    Kubernetes：部署 Spring Boot 应用 06
+                  </h3>
+                </a>
+              </div>
             
 
             
